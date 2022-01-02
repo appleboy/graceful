@@ -147,26 +147,34 @@ func (g *Manager) Done() <-chan struct{} {
 	return g.doneCtx.Done()
 }
 
-// NewManager initial the Manager
-func NewManager(opts ...Option) *Manager {
-	o := newOptions(opts...)
+func newManager(opts ...Option) *Manager {
 	startOnce.Do(func() {
+		o := newOptions(opts...)
 		manager = &Manager{
 			lock:   &sync.RWMutex{},
 			logger: o.logger,
 			errors: make([]error, 0),
 		}
+		manager.start(o.ctx)
 	})
 
-	manager.start(o.ctx)
-
 	return manager
+}
+
+// NewManager initial the Manager
+func NewManager(opts ...Option) *Manager {
+	return newManager(opts...)
+}
+
+// NewManagerWithContext initial the Manager with custom context
+func NewManagerWithContext(ctx context.Context, opts ...Option) *Manager {
+	return newManager(append(opts, WithContext(ctx))...)
 }
 
 // NewManager get the Manager
 func GetManager() *Manager {
 	if manager == nil {
-		panic("please new the manager first")
+		panic("please use NewManager to initial the manager first")
 	}
 
 	return manager
