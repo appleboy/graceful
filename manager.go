@@ -35,7 +35,7 @@ type Manager struct {
 
 func (g *Manager) start(ctx context.Context) {
 	g.shutdownCtx, g.shutdownCtxCancel = context.WithCancel(ctx)
-	g.doneCtx, g.doneCtxCancel = context.WithCancel(ctx)
+	g.doneCtx, g.doneCtxCancel = context.WithCancel(context.Background())
 
 	go g.handleSignals(ctx)
 }
@@ -77,15 +77,18 @@ func (g *Manager) handleSignals(ctx context.Context) {
 			case syscall.SIGINT:
 				g.logger.Infof("PID %d. Received SIGINT. Shutting down...", pid)
 				g.doGracefulShutdown()
+				return
 			case syscall.SIGTERM:
 				g.logger.Infof("PID %d. Received SIGTERM. Shutting down...", pid)
 				g.doGracefulShutdown()
+				return
 			default:
 				g.logger.Infof("PID %d. Received %v.", pid, sig)
 			}
 		case <-ctx.Done():
 			g.logger.Infof("PID: %d. Background context for manager closed - %v - Shutting down...", pid, ctx.Err())
 			g.doGracefulShutdown()
+			return
 		}
 	}
 }

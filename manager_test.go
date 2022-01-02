@@ -2,6 +2,7 @@ package graceful
 
 import (
 	"context"
+	"log"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -78,6 +79,43 @@ func TestRunningAndShutdownJob(t *testing.T) {
 	go func() {
 		time.Sleep(50 * time.Millisecond)
 		m.doGracefulShutdown()
+	}()
+
+	<-m.Done()
+
+	if atomic.LoadInt32(&count) != 2 {
+		t.Errorf("count error: %v", atomic.LoadInt32(&count))
+	}
+}
+
+func TestNewManagerWithContext(t *testing.T) {
+	setup()
+	ctx, cancel := context.WithCancel(context.Background())
+	var count int32 = 0
+	m := NewManager(WithContext(ctx))
+
+	// Add job
+	m.AddRunningJob(func(ctx context.Context) error {
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+				log.Println("a")
+				atomic.AddInt32(&count, 1)
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
+	})
+
+	m.AddShutdownJob(func() error {
+		atomic.AddInt32(&count, 1)
+		return nil
+	})
+
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		cancel()
 	}()
 
 	<-m.Done()
