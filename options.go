@@ -16,6 +16,12 @@ func WithContext(ctx context.Context) Option {
 	}
 }
 
+func WithLogger(logger Logger) Option {
+	return func(o *options) {
+		o.logger = logger
+	}
+}
+
 func newOptions(opts ...Option) options {
 	defaultOpts := options{
 		ctx:    context.Background(),
