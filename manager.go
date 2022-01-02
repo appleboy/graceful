@@ -98,13 +98,14 @@ func (g *Manager) doShutdownJob(f ShtdownJob) {
 	go func() {
 		// to handle panic cases from inside the worker
 		defer func() {
-			g.runningWaitGroup.Done()
 			if err := recover(); err != nil {
-				g.logger.Error(err)
+				msg := fmt.Errorf("panic in shutdown job: %v", err)
+				g.logger.Error(msg)
 				g.lock.Lock()
-				g.errors = append(g.errors, fmt.Errorf("panic in shutdown job: %v", err))
+				g.errors = append(g.errors, msg)
 				g.lock.Unlock()
 			}
+			g.runningWaitGroup.Done()
 		}()
 		if err := f(); err != nil {
 			g.lock.Lock()
@@ -129,13 +130,14 @@ func (g *Manager) AddRunningJob(f RunningJob) {
 	go func() {
 		// to handle panic cases from inside the worker
 		defer func() {
-			g.runningWaitGroup.Done()
 			if err := recover(); err != nil {
-				g.logger.Error(err)
+				msg := fmt.Errorf("panic in running job: %v", err)
+				g.logger.Error(msg)
 				g.lock.Lock()
-				g.errors = append(g.errors, fmt.Errorf("panic in running job: %v", err))
+				g.errors = append(g.errors, msg)
 				g.lock.Unlock()
 			}
+			g.runningWaitGroup.Done()
 		}()
 		if err := f(g.shutdownCtx); err != nil {
 			g.lock.Lock()
