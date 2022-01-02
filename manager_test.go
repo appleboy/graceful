@@ -13,7 +13,7 @@ func setup() {
 	startOnce = sync.Once{}
 }
 
-func TestManager(t *testing.T) {
+func TestMissingManager(t *testing.T) {
 	setup()
 	defer func() {
 		if r := recover(); r == nil {
@@ -21,6 +21,15 @@ func TestManager(t *testing.T) {
 		}
 	}()
 	_ = GetManager()
+}
+
+func TestManagerExist(t *testing.T) {
+	setup()
+	NewManager()
+	m := GetManager()
+	if m == nil {
+		t.Errorf("missing manager")
+	}
 }
 
 func TestRunningJob(t *testing.T) {
