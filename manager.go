@@ -2,6 +2,7 @@ package graceful
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -90,6 +91,9 @@ func (g *Manager) AddRunningJob(f RunningJob) {
 			g.runningWaitGroup.Done()
 			if err := recover(); err != nil {
 				g.logger.Error(err)
+				g.lock.Lock()
+				g.errors = append(g.errors, fmt.Errorf("panic in running job: %v", err))
+				g.lock.Unlock()
 			}
 		}()
 		if err := f(g.shutdownCtx); err != nil {
