@@ -86,7 +86,6 @@ func (g *Manager) AddRunningJob(f RunningJob) {
 
 	go func() {
 		// to handle panic cases from inside the worker
-		// in such case, we start a new goroutine
 		defer func() {
 			g.runningWaitGroup.Done()
 			if err := recover(); err != nil {
