@@ -81,6 +81,7 @@ func (g *Manager) handleSignals(ctx context.Context) {
 	}
 }
 
+// AddRunningJob add task
 func (g *Manager) AddRunningJob(f RunningJob) {
 	g.runningWaitGroup.Add(1)
 
@@ -124,7 +125,7 @@ func NewManager(opts ...Option) *Manager {
 	return manager
 }
 
-// NewManager initial the Manager
+// NewManager get the Manager
 func GetManager() *Manager {
 	if manager == nil {
 		panic("please new the manager first")
