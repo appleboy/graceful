@@ -9,10 +9,11 @@ import (
 	"syscall"
 )
 
-// Manager represents the graceful server manager interface
+// manager represents the graceful server manager interface
 var manager *Manager
 
-var initOnce = sync.Once{}
+// startOnce initial graceful manager once
+var startOnce = sync.Once{}
 
 type RunningJob func(context.Context) error
 
@@ -112,7 +113,7 @@ func (g *Manager) Done() <-chan struct{} {
 // NewManager initial the Manager
 func NewManager(opts ...Option) *Manager {
 	o := newOptions(opts...)
-	initOnce.Do(func() {
+	startOnce.Do(func() {
 		manager = &Manager{
 			lock:   &sync.RWMutex{},
 			logger: o.logger,
