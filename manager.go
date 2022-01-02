@@ -15,7 +15,10 @@ var manager *Manager
 // startOnce initial graceful manager once
 var startOnce = sync.Once{}
 
-type RunningJob func(context.Context) error
+type (
+	RunningJob func(context.Context) error
+	ShtdownJob func() error
+)
 
 // Manager manages the graceful shutdown process
 type Manager struct {
@@ -27,6 +30,7 @@ type Manager struct {
 	logger            Logger
 	runningWaitGroup  sync.WaitGroup
 	errors            []error
+	runAtShutdown     []func() error
 }
 
 func (g *Manager) start(ctx context.Context) {
@@ -39,6 +43,10 @@ func (g *Manager) start(ctx context.Context) {
 // doGracefulShutdown graceful shutdown all task
 func (g *Manager) doGracefulShutdown() {
 	g.shutdownCtxCancel()
+	// doing shutdown job
+	for _, f := range g.runAtShutdown {
+		g.doShutdownJob(f)
+	}
 	go func() {
 		g.waitForJobs()
 		g.lock.Lock()
@@ -82,7 +90,36 @@ func (g *Manager) handleSignals(ctx context.Context) {
 	}
 }
 
-// AddRunningJob add task
+// doShutdownJob execute shutdown task
+func (g *Manager) doShutdownJob(f ShtdownJob) {
+	go func() {
+		// to handle panic cases from inside the worker
+		defer func() {
+			g.runningWaitGroup.Done()
+			if err := recover(); err != nil {
+				g.logger.Error(err)
+				g.lock.Lock()
+				g.errors = append(g.errors, fmt.Errorf("panic in shutdown job: %v", err))
+				g.lock.Unlock()
+			}
+		}()
+		if err := f(); err != nil {
+			g.lock.Lock()
+			g.errors = append(g.errors, err)
+			g.lock.Unlock()
+		}
+	}()
+}
+
+// AddShutdownJob add shutdown task
+func (g *Manager) AddShutdownJob(f ShtdownJob) {
+	g.runningWaitGroup.Add(1)
+	g.lock.Lock()
+	g.runAtShutdown = append(g.runAtShutdown, f)
+	g.lock.Unlock()
+}
+
+// AddRunningJob add running task
 func (g *Manager) AddRunningJob(f RunningJob) {
 	g.runningWaitGroup.Add(1)
 
