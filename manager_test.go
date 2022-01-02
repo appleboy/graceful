@@ -101,7 +101,7 @@ func TestNewManagerWithContext(t *testing.T) {
 	setup()
 	ctx, cancel := context.WithCancel(context.Background())
 	var count int32 = 0
-	m := NewManager(WithContext(ctx))
+	m := NewManagerWithContext(ctx)
 
 	// Add job
 	m.AddRunningJob(func(ctx context.Context) error {
