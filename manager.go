@@ -34,8 +34,8 @@ func (g *Manager) start(ctx context.Context) {
 	go g.handleSignals(ctx)
 }
 
-// DoGracefulShutdown graceful shutdown all task
-func (g *Manager) DoGracefulShutdown() {
+// doGracefulShutdown graceful shutdown all task
+func (g *Manager) doGracefulShutdown() {
 	g.shutdownCtxCancel()
 	go func() {
 		g.waitForJobs()
@@ -66,16 +66,16 @@ func (g *Manager) handleSignals(ctx context.Context) {
 			switch sig {
 			case syscall.SIGINT:
 				g.logger.Infof("PID %d. Received SIGINT. Shutting down...", pid)
-				g.DoGracefulShutdown()
+				g.doGracefulShutdown()
 			case syscall.SIGTERM:
 				g.logger.Infof("PID %d. Received SIGTERM. Shutting down...", pid)
-				g.DoGracefulShutdown()
+				g.doGracefulShutdown()
 			default:
 				g.logger.Infof("PID %d. Received %v.", pid, sig)
 			}
 		case <-ctx.Done():
 			g.logger.Infof("PID: %d. Background context for manager closed - %v - Shutting down...", pid, ctx.Err())
-			g.DoGracefulShutdown()
+			g.doGracefulShutdown()
 		}
 	}
 }
