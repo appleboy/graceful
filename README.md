@@ -112,3 +112,13 @@ func main() {
   <-m.Done()
 }
 ```
+
+Using custom logger, see the [zerolog example](./_example/example03/logger.go)
+
+```go
+m := graceful.NewManager(
+  graceful.WithLogger(logger{}),
+)
+```
+
+get [more information](./_example/example03/main.go)
