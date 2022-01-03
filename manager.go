@@ -30,7 +30,7 @@ type Manager struct {
 	logger            Logger
 	runningWaitGroup  sync.WaitGroup
 	errors            []error
-	runAtShutdown     []func() error
+	runAtShutdown     []ShtdownJob
 }
 
 func (g *Manager) start(ctx context.Context) {
