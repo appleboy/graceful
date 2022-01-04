@@ -53,7 +53,7 @@ func main() {
 }
 ```
 
-You can also add shutdowbn jobs.
+You can also add shutdown jobs.
 
 ```go
 package main
