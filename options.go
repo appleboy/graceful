@@ -2,7 +2,7 @@ package graceful
 
 import "context"
 
-// Option for queue system
+// Option for Functional
 type Option func(*options)
 
 type options struct {
@@ -10,12 +10,14 @@ type options struct {
 	logger Logger
 }
 
+// WithContext custom context
 func WithContext(ctx context.Context) Option {
 	return func(o *options) {
 		o.ctx = ctx
 	}
 }
 
+// WithLogger custom logger
 func WithLogger(logger Logger) Option {
 	return func(o *options) {
 		o.logger = logger
