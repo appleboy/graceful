@@ -45,8 +45,9 @@ func (g *Manager) doGracefulShutdown() {
 	g.shutdownCtxCancel()
 	// doing shutdown job
 	for _, f := range g.runAtShutdown {
+		run := f
 		g.runningWaitGroup.Run(func() {
-			g.doShutdownJob(f)
+			g.doShutdownJob(run)
 		})
 	}
 	go func() {
