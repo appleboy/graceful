@@ -148,6 +148,11 @@ func (g *Manager) Done() <-chan struct{} {
 	return g.doneCtx.Done()
 }
 
+// ShutdownContext returns a context.Context that is Done at shutdown
+func (g *Manager) ShutdownContext() context.Context {
+	return g.shutdownCtx
+}
+
 func newManager(opts ...Option) *Manager {
 	startOnce.Do(func() {
 		o := newOptions(opts...)

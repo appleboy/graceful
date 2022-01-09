@@ -191,3 +191,32 @@ func TestWithError(t *testing.T) {
 		t.Errorf("fail error count: %d", len(m.errors))
 	}
 }
+
+func TestGetShutdonwContext(t *testing.T) {
+	setup()
+	ctx, cancel := context.WithCancel(context.Background())
+	var count int32 = 0
+	m := NewManagerWithContext(ctx)
+
+	m.AddShutdownJob(func() error {
+		atomic.AddInt32(&count, 1)
+		return nil
+	})
+
+	m.AddShutdownJob(func() error {
+		<-m.ShutdownContext().Done()
+		atomic.AddInt32(&count, 1)
+		return nil
+	})
+
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		cancel()
+	}()
+
+	<-m.Done()
+
+	if atomic.LoadInt32(&count) != 2 {
+		t.Errorf("count error: %v", atomic.LoadInt32(&count))
+	}
+}
