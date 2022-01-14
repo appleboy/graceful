@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -212,6 +213,66 @@ func TestGetShutdonwContext(t *testing.T) {
 	go func() {
 		time.Sleep(50 * time.Millisecond)
 		cancel()
+	}()
+
+	<-m.Done()
+
+	if atomic.LoadInt32(&count) != 2 {
+		t.Errorf("count error: %v", atomic.LoadInt32(&count))
+	}
+}
+
+func TestWithSignalSIGINT(t *testing.T) {
+	setup()
+	var count int32 = 0
+	m := NewManager()
+
+	m.AddShutdownJob(func() error {
+		atomic.AddInt32(&count, 1)
+		return nil
+	})
+
+	m.AddShutdownJob(func() error {
+		<-m.ShutdownContext().Done()
+		atomic.AddInt32(&count, 1)
+		return nil
+	})
+
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		if err := syscall.Kill(syscall.Getpid(), syscall.SIGINT); err != nil {
+			t.Errorf("syscall error: %v", err)
+		}
+	}()
+
+	<-m.Done()
+
+	if atomic.LoadInt32(&count) != 2 {
+		t.Errorf("count error: %v", atomic.LoadInt32(&count))
+	}
+}
+
+func TestWithSignalSIGTERM(t *testing.T) {
+	setup()
+	var count int32 = 0
+	m := NewManager()
+
+	m.AddShutdownJob(func() error {
+		atomic.AddInt32(&count, 1)
+		return nil
+	})
+
+	m.AddShutdownJob(func() error {
+		<-m.ShutdownContext().Done()
+		atomic.AddInt32(&count, 1)
+		return nil
+	})
+
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		if err := syscall.Kill(syscall.Getpid(), syscall.SIGTERM); err != nil {
+			t.Errorf("syscall error: %v", err)
+		}
 	}()
 
 	<-m.Done()
