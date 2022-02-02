@@ -46,7 +46,7 @@ func TestRunningJob(t *testing.T) {
 				return nil
 			default:
 				atomic.AddInt32(&count, 1)
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(200 * time.Millisecond)
 			}
 		}
 	})
@@ -76,7 +76,7 @@ func TestRunningAndShutdownJob(t *testing.T) {
 				return nil
 			default:
 				atomic.AddInt32(&count, 1)
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(200 * time.Millisecond)
 			}
 		}
 	})
