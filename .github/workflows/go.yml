@@ -31,6 +31,8 @@ jobs:
         include:
           - os: ubuntu-latest
             go-build: ~/.cache/go-build
+          - os: macos-latest
+            go-build: ~/Library/Caches/go-build
     name: ${{ matrix.os }} @ Go ${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     env:
@@ -50,11 +52,14 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: |
-            ${{ matrix.go-build }}
-            ~/go/pkg/mod
+            ~/go/pkg/mod              # Module download cache
+            ~/.cache/go-build         # Build cache (Linux)
+            ~/Library/Caches/go-build # Build cache (Mac)
+            '%LocalAppData%\go-build' # Build cache (Windows)
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
       - name: Run Tests
         run: |
           go test -v -covermode=atomic -coverprofile=coverage.out
