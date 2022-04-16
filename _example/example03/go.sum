@@ -1,7 +1,3 @@
-github.com/appleboy/graceful v0.0.1 h1:M4oRvxzzbOvDzhNe8dYz8gHy+g2eDioy2VzzZiE4c8o=
-github.com/appleboy/graceful v0.0.1/go.mod h1:Q2mVx0t+N0lCDZc5MJudbcpTm6cgGM/J2gZCZIqD9dc=
-github.com/appleboy/graceful v0.0.2-0.20220102161147-760cecbcf493 h1:wmiv6zHwYQ+MRXEoZCWU2kF670w3QL0r4gHSabR76GM=
-github.com/appleboy/graceful v0.0.2-0.20220102161147-760cecbcf493/go.mod h1:Q2mVx0t+N0lCDZc5MJudbcpTm6cgGM/J2gZCZIqD9dc=
 github.com/coreos/go-systemd/v22 v22.3.2/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
