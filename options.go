@@ -2,30 +2,41 @@ package graceful
 
 import "context"
 
-// Option for Functional
-type Option func(*options)
+// Option interface for configuration.
+type Option interface {
+	Apply(*Options)
+}
 
-type options struct {
+// OptionFunc is a function that configures a graceful shutdown.
+type OptionFunc func(*Options)
+
+// Apply calls f(option)
+func (f OptionFunc) Apply(option *Options) {
+	f(option)
+}
+
+// Options for graceful shutdown
+type Options struct {
 	ctx    context.Context
 	logger Logger
 }
 
 // WithContext custom context
 func WithContext(ctx context.Context) Option {
-	return func(o *options) {
+	return OptionFunc(func(o *Options) {
 		o.ctx = ctx
-	}
+	})
 }
 
 // WithLogger custom logger
 func WithLogger(logger Logger) Option {
-	return func(o *options) {
+	return OptionFunc(func(o *Options) {
 		o.logger = logger
-	}
+	})
 }
 
-func newOptions(opts ...Option) options {
-	defaultOpts := options{
+func newOptions(opts ...Option) Options {
+	defaultOpts := Options{
 		ctx:    context.Background(),
 		logger: NewLogger(),
 	}
@@ -33,7 +44,7 @@ func newOptions(opts ...Option) options {
 	// Loop through each option
 	for _, opt := range opts {
 		// Call the option giving the instantiated
-		opt(&defaultOpts)
+		opt.Apply(&defaultOpts)
 	}
 
 	return defaultOpts
