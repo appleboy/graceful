@@ -1,12 +1,5 @@
-name: Run Tests
-
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+name: Run Testing
+on: push
 
 jobs:
   lint:
@@ -21,13 +14,15 @@ jobs:
       - name: Setup golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.45.0
+          version: v1.49.0
           args: --verbose
+
+  # Label of the container job
   test:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        go: [1.13, 1.14, 1.15, 1.16, 1.17, 1.18]
+        go: [1.15, 1.16, 1.17, 1.18, 1.19]
         include:
           - os: ubuntu-latest
             go-build: ~/.cache/go-build
@@ -36,6 +31,7 @@ jobs:
     env:
       GO111MODULE: on
       GOPROXY: https://proxy.golang.org
+
     steps:
       - name: Set up Go ${{ matrix.go }}
         uses: actions/setup-go@v3
@@ -43,7 +39,7 @@ jobs:
           go-version: ${{ matrix.go }}
 
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
 
