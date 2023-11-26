@@ -19,7 +19,7 @@ type Logger interface {
 // NewLogger for simple logger.
 func NewLogger() Logger {
 	return defaultLogger{
-		infoLogger:  log.New(os.Stderr, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile),
+		infoLogger:  log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile),
 		errorLogger: log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile),
 		fatalLogger: log.New(os.Stderr, "FATAL: ", log.Ldate|log.Ltime|log.Lshortfile),
 	}
