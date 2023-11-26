@@ -2,6 +2,8 @@
 
 [![Run Tests](https://github.com/appleboy/graceful/actions/workflows/go.yml/badge.svg)](https://github.com/appleboy/graceful/actions/workflows/go.yml)
 [![codecov](https://codecov.io/gh/appleboy/graceful/branch/master/graph/badge.svg?token=zPqtcz0Rum)](https://codecov.io/gh/appleboy/graceful)
+[![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/graceful)](https://goreportcard.com/report/github.com/appleboy/graceful)
+[![GoDoc](https://godoc.org/github.com/appleboy/graceful?status.svg)](https://godoc.org/github.com/appleboy/graceful)
 
 Graceful shutdown package when a service is turned off by software function.
 
