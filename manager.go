@@ -68,9 +68,7 @@ func (g *Manager) handleSignals(ctx context.Context) {
 
 	signal.Notify(
 		c,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGTSTP,
+		signals...,
 	)
 	defer signal.Stop(c)
 
@@ -87,8 +85,6 @@ func (g *Manager) handleSignals(ctx context.Context) {
 				g.logger.Infof("PID %d. Received SIGTERM. Shutting down...", pid)
 				g.doGracefulShutdown()
 				return
-			case syscall.SIGTSTP:
-				g.logger.Info("PID %d. Received SIGTSTP.", pid)
 			default:
 				g.logger.Infof("PID %d. Received %v.", pid, sig)
 			}
