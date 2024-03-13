@@ -3,6 +3,7 @@ package graceful
 import (
 	"context"
 	"errors"
+	"os"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -240,8 +241,12 @@ func TestWithSignalSIGINT(t *testing.T) {
 
 	go func() {
 		time.Sleep(50 * time.Millisecond)
-		if err := syscall.Kill(syscall.Getpid(), syscall.SIGINT); err != nil {
-			t.Errorf("syscall error: %v", err)
+		process, err := os.FindProcess(syscall.Getpid())
+		if err != nil {
+			t.Errorf("os.FindProcess error: %v", err)
+		}
+		if err := process.Signal(syscall.SIGINT); err != nil {
+			t.Errorf("process.Signal error: %v", err)
 		}
 	}()
 
@@ -270,8 +275,12 @@ func TestWithSignalSIGTERM(t *testing.T) {
 
 	go func() {
 		time.Sleep(50 * time.Millisecond)
-		if err := syscall.Kill(syscall.Getpid(), syscall.SIGTERM); err != nil {
-			t.Errorf("syscall error: %v", err)
+		process, err := os.FindProcess(syscall.Getpid())
+		if err != nil {
+			t.Errorf("os.FindProcess error: %v", err)
+		}
+		if err := process.Signal(syscall.SIGTERM); err != nil {
+			t.Errorf("process.Signal error: %v", err)
 		}
 	}()
 
