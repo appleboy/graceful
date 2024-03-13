@@ -1,5 +1,5 @@
-//go:build linux || bsd || darwin
-// +build linux bsd darwin
+//go:build !windows
+// +build !windows
 
 package graceful
 

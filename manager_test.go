@@ -225,40 +225,15 @@ func TestGetShutdonwContext(t *testing.T) {
 
 func TestWithSignalSIGINT(t *testing.T) {
 	setup()
-	var count int32 = 0
-	m := NewManager()
-
-	m.AddShutdownJob(func() error {
-		atomic.AddInt32(&count, 1)
-		return nil
-	})
-
-	m.AddShutdownJob(func() error {
-		<-m.ShutdownContext().Done()
-		atomic.AddInt32(&count, 1)
-		return nil
-	})
-
-	go func() {
-		time.Sleep(50 * time.Millisecond)
-		process, err := os.FindProcess(syscall.Getpid())
-		if err != nil {
-			t.Errorf("os.FindProcess error: %v", err)
-		}
-		if err := process.Signal(syscall.SIGINT); err != nil {
-			t.Errorf("process.Signal error: %v", err)
-		}
-	}()
-
-	<-m.Done()
-
-	if atomic.LoadInt32(&count) != 2 {
-		t.Errorf("count error: %v", atomic.LoadInt32(&count))
-	}
+	testingSignal(t, syscall.SIGINT)
 }
 
 func TestWithSignalSIGTERM(t *testing.T) {
 	setup()
+	testingSignal(t, syscall.SIGTERM)
+}
+
+func testingSignal(t *testing.T, signal os.Signal) {
 	var count int32 = 0
 	m := NewManager()
 
@@ -279,7 +254,7 @@ func TestWithSignalSIGTERM(t *testing.T) {
 		if err != nil {
 			t.Errorf("os.FindProcess error: %v", err)
 		}
-		if err := process.Signal(syscall.SIGTERM); err != nil {
+		if err := process.Signal(signal); err != nil {
 			t.Errorf("process.Signal error: %v", err)
 		}
 	}()
