@@ -1,3 +1,3 @@
 module github.com/appleboy/graceful
 
-go 1.18
+go 1.21
