@@ -35,6 +35,15 @@ func WithLogger(logger Logger) Option {
 	})
 }
 
+// newOptions creates a new Options instance with default settings and applies any provided Option modifiers.
+// It initializes the Options struct with a default background context and a new logger,
+// then iterates over each given Option to adjust the configuration accordingly.
+//
+// Parameters:
+//   - opts: A variadic list of Option functions that modify the default Options.
+//
+// Returns:
+//   - Options: The customized Options struct after all modifications have been applied.
 func newOptions(opts ...Option) Options {
 	defaultOpts := Options{
 		ctx:    context.Background(),
