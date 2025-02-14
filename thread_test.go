@@ -1,28 +1,50 @@
 package graceful
 
 import (
+	"sync"
 	"testing"
 )
 
-func TestRun(t *testing.T) {
+func TestRunMultiple(t *testing.T) {
 	g := newRoutineGroup()
+	var mu sync.Mutex
+	counter := 0
+	iterations := 10
 
-	// Define a flag to check if the function was executed
-	var executed bool
-
-	// Define the function to be executed
-	fn := func() {
-		executed = true
+	for i := 0; i < iterations; i++ {
+		g.Run(func() {
+			mu.Lock()
+			counter++
+			mu.Unlock()
+		})
 	}
 
-	// Run the function in a goroutine
-	g.Run(fn)
-
-	// Wait for the goroutine to finish
 	g.Wait()
 
-	// Check if the function was executed
-	if !executed {
-		t.Error("Function was not executed")
+	if counter != iterations {
+		t.Errorf("Expected counter to be %d, got %d", iterations, counter)
+	}
+}
+
+func TestRunPanic(t *testing.T) {
+	g := newRoutineGroup()
+	panicRecovered := false
+	done := make(chan struct{})
+
+	g.Run(func() {
+		defer func() {
+			if r := recover(); r != nil {
+				panicRecovered = true
+			}
+			close(done)
+		}()
+		panic("intentional panic for testing")
+	})
+
+	g.Wait()
+	<-done
+
+	if !panicRecovered {
+		t.Error("Expected panic to be recovered")
 	}
 }
