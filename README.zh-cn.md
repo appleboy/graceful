@@ -1,6 +1,6 @@
 # graceful
 
-[English](README.md) | [繁體中文](README.zh-tw.md) | [简体中文](README.zh-cn.md)
+[English](README.md) | [繁體中文](README.zh-tw.md) | **简体中文**
 
 [![Run Tests](https://github.com/appleboy/graceful/actions/workflows/go.yml/badge.svg)](https://github.com/appleboy/graceful/actions/workflows/go.yml)
 [![codecov](https://codecov.io/gh/appleboy/graceful/branch/master/graph/badge.svg?token=zPqtcz0Rum)](https://codecov.io/gh/appleboy/graceful)
