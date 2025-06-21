@@ -102,7 +102,7 @@ func (g *Manager) doShutdownJob(f ShtdownJob) {
 	defer func() {
 		if err := recover(); err != nil {
 			msg := fmt.Errorf("panic in shutdown job: %v", err)
-			g.logger.Error(msg)
+			g.logger.Errorf(msg.Error())
 			g.lock.Lock()
 			g.errors = append(g.errors, msg)
 			g.lock.Unlock()
@@ -129,7 +129,7 @@ func (g *Manager) AddRunningJob(f RunningJob) {
 		defer func() {
 			if err := recover(); err != nil {
 				msg := fmt.Errorf("panic in running job: %v", err)
-				g.logger.Error(msg)
+				g.logger.Errorf(msg.Error())
 				g.lock.Lock()
 				g.errors = append(g.errors, msg)
 				g.lock.Unlock()
