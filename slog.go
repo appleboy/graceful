@@ -35,7 +35,7 @@ func WithSlog(logger *slog.Logger) SlogLoggerOption {
 // Usage:
 //
 //	NewSlogLogger()                        // text mode (default)
-//	NewSlogLogger(WithJson())              // json mode
+//	NewSlogLogger(WithJSON())              // json mode
 //	NewSlogLogger(WithSlog(loggerObj))     // inject custom *slog.Logger, which overrides other options
 func NewSlogLogger(opts ...SlogLoggerOption) Logger {
 	var o slogLoggerOptions
