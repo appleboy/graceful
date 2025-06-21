@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	r := gin.Default()
+	r := gin.New()
 
 	// Example route: GET /ping returns {"message": "pong"}
 	r.GET("/ping", func(c *gin.Context) {
@@ -20,7 +20,11 @@ func main() {
 		})
 	})
 
-	m := graceful.NewManager()
+	m := graceful.NewManager(
+		graceful.WithLogger(graceful.NewSlogLogger(
+			graceful.WithSlog(slog.Default()),
+		)),
+	)
 
 	srv := &http.Server{
 		Addr:              ":8080",
