@@ -40,8 +40,12 @@ func TestNewLogger_Infof_Errorf(t *testing.T) {
 	wOut.Close()
 	wErr.Close()
 	var bufOut, bufErr bytes.Buffer
-	bufOut.ReadFrom(rOut)
-	bufErr.ReadFrom(rErr)
+	if _, err := bufOut.ReadFrom(rOut); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := bufErr.ReadFrom(rErr); err != nil {
+		t.Fatal(err)
+	}
 
 	if !strings.Contains(bufOut.String(), "info-message: foo") {
 		t.Errorf("Infof did not write expected message to stdout: %q", bufOut.String())
@@ -70,8 +74,12 @@ func TestNewSlogLogger_Text(t *testing.T) {
 	wOut.Close()
 	wErr.Close()
 	var bufOut, bufErr bytes.Buffer
-	bufOut.ReadFrom(rOut)
-	bufErr.ReadFrom(rErr)
+	if _, err := bufOut.ReadFrom(rOut); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := bufErr.ReadFrom(rErr); err != nil {
+		t.Fatal(err)
+	}
 
 	// Text handler should print plaintext, not JSON/bracketed
 	outStr := bufOut.String()
@@ -99,8 +107,12 @@ func TestNewSlogLogger_Json(t *testing.T) {
 	wOut.Close()
 	wErr.Close()
 	var bufOut, bufErr bytes.Buffer
-	bufOut.ReadFrom(rOut)
-	bufErr.ReadFrom(rErr)
+	if _, err := bufOut.ReadFrom(rOut); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := bufErr.ReadFrom(rErr); err != nil {
+		t.Fatal(err)
+	}
 
 	// JSON handler should output JSON encoded log
 	outStr := bufOut.String()
