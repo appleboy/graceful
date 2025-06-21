@@ -1,6 +1,8 @@
 module example03
 
-go 1.20
+go 1.21
+
+toolchain go1.24.3
 
 require (
 	github.com/appleboy/graceful v0.0.2-0.20220102161147-760cecbcf493
