@@ -273,3 +273,107 @@ func testingSignal(t *testing.T, signal os.Signal) {
 		t.Errorf("count error: %v", atomic.LoadInt32(&count))
 	}
 }
+
+func TestShutdownTimeout(t *testing.T) {
+	setup()
+	var count int32 = 0
+	m := NewManager(WithShutdownTimeout(100 * time.Millisecond))
+
+	// Add a job that takes longer than timeout
+	m.AddRunningJob(func(ctx context.Context) error {
+		atomic.AddInt32(&count, 1)
+		time.Sleep(500 * time.Millisecond) // This exceeds the 100ms timeout
+		return nil
+	})
+
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		m.doGracefulShutdown()
+	}()
+
+	<-m.Done()
+
+	// Job should have started
+	if atomic.LoadInt32(&count) != 1 {
+		t.Errorf("count error: %v", atomic.LoadInt32(&count))
+	}
+
+	// Should have timeout error
+	errs := m.Errors()
+	hasTimeoutError := false
+	for _, err := range errs {
+		if err.Error() == "shutdown timeout exceeded: 100ms" {
+			hasTimeoutError = true
+			break
+		}
+	}
+	if !hasTimeoutError {
+		t.Errorf("expected timeout error, got: %v", errs)
+	}
+}
+
+func TestShutdownTimeoutZero(t *testing.T) {
+	setup()
+	var count int32 = 0
+	m := NewManager(WithShutdownTimeout(0)) // No timeout
+
+	// Add a job that takes a while
+	m.AddRunningJob(func(ctx context.Context) error {
+		for {
+			select {
+			case <-ctx.Done():
+				atomic.AddInt32(&count, 1)
+				return nil
+			default:
+				time.Sleep(50 * time.Millisecond)
+			}
+		}
+	})
+
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		m.doGracefulShutdown()
+	}()
+
+	<-m.Done()
+
+	// Job should have completed
+	if atomic.LoadInt32(&count) != 1 {
+		t.Errorf("count error: %v", atomic.LoadInt32(&count))
+	}
+
+	// Should have no timeout error
+	errs := m.Errors()
+	for _, err := range errs {
+		if err.Error() == "shutdown timeout exceeded: 0s" {
+			t.Errorf("should not have timeout error with timeout=0")
+		}
+	}
+}
+
+func TestMultipleShutdownCalls(t *testing.T) {
+	setup()
+	var count int32 = 0
+	m := NewManager()
+
+	m.AddShutdownJob(func() error {
+		atomic.AddInt32(&count, 1)
+		return nil
+	})
+
+	// Call shutdown multiple times
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		for i := 0; i < 5; i++ {
+			m.doGracefulShutdown()
+			time.Sleep(10 * time.Millisecond)
+		}
+	}()
+
+	<-m.Done()
+
+	// Shutdown job should only run once despite multiple calls
+	if atomic.LoadInt32(&count) != 1 {
+		t.Errorf("shutdown job ran %d times, expected 1", atomic.LoadInt32(&count))
+	}
+}
