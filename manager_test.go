@@ -189,8 +189,16 @@ func TestWithError(t *testing.T) {
 		t.Errorf("count error: %v", atomic.LoadInt32(&count))
 	}
 
-	if len(m.errors) != 4 {
-		t.Errorf("fail error count: %d", len(m.errors))
+	// Test the public Errors() API
+	errs := m.Errors()
+	if len(errs) != 4 {
+		t.Errorf("fail error count: %d", len(errs))
+	}
+
+	// Verify that returned slice is a copy (modifying it shouldn't affect internal state)
+	errs[0] = errors.New("modified error")
+	if m.Errors()[0].Error() == "modified error" {
+		t.Errorf("Errors() should return a copy, not the internal slice")
 	}
 }
 

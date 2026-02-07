@@ -16,8 +16,8 @@ var manager *Manager
 var startOnce = sync.Once{}
 
 type (
-	RunningJob func(context.Context) error
-	ShtdownJob func() error
+	RunningJob  func(context.Context) error
+	ShutdownJob func() error
 )
 
 // Manager manages the graceful shutdown process
@@ -30,7 +30,7 @@ type Manager struct {
 	logger            Logger
 	runningWaitGroup  *routineGroup
 	errors            []error
-	runAtShutdown     []ShtdownJob
+	runAtShutdown     []ShutdownJob
 }
 
 func (g *Manager) start(ctx context.Context) {
@@ -43,9 +43,16 @@ func (g *Manager) start(ctx context.Context) {
 // doGracefulShutdown graceful shutdown all task
 func (g *Manager) doGracefulShutdown() {
 	g.shutdownCtxCancel()
-	// doing shutdown job
-	for _, f := range g.runAtShutdown {
-		func(run ShtdownJob) {
+
+	// Copy shutdown jobs to avoid race condition while iterating
+	g.lock.RLock()
+	jobs := make([]ShutdownJob, len(g.runAtShutdown))
+	copy(jobs, g.runAtShutdown)
+	g.lock.RUnlock()
+
+	// Execute shutdown jobs
+	for _, f := range jobs {
+		func(run ShutdownJob) {
 			g.runningWaitGroup.Run(func() {
 				g.doShutdownJob(run)
 			})
@@ -53,9 +60,7 @@ func (g *Manager) doGracefulShutdown() {
 	}
 	go func() {
 		g.waitForJobs()
-		g.lock.Lock()
 		g.doneCtxCancel()
-		g.lock.Unlock()
 	}()
 }
 
@@ -97,7 +102,7 @@ func (g *Manager) handleSignals(ctx context.Context) {
 }
 
 // doShutdownJob execute shutdown task
-func (g *Manager) doShutdownJob(f ShtdownJob) {
+func (g *Manager) doShutdownJob(f ShutdownJob) {
 	// to handle panic cases from inside the worker
 	defer func() {
 		if err := recover(); err != nil {
@@ -116,7 +121,7 @@ func (g *Manager) doShutdownJob(f ShtdownJob) {
 }
 
 // AddShutdownJob add shutdown task
-func (g *Manager) AddShutdownJob(f ShtdownJob) {
+func (g *Manager) AddShutdownJob(f ShutdownJob) {
 	g.lock.Lock()
 	g.runAtShutdown = append(g.runAtShutdown, f)
 	g.lock.Unlock()
@@ -151,6 +156,16 @@ func (g *Manager) Done() <-chan struct{} {
 // ShutdownContext returns a context.Context that is Done at shutdown
 func (g *Manager) ShutdownContext() context.Context {
 	return g.shutdownCtx
+}
+
+// Errors returns all errors that occurred during running jobs and shutdown jobs
+func (g *Manager) Errors() []error {
+	g.lock.RLock()
+	defer g.lock.RUnlock()
+	// Return a copy to prevent external modification
+	result := make([]error, len(g.errors))
+	copy(result, g.errors)
+	return result
 }
 
 func newManager(opts ...Option) *Manager {
