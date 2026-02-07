@@ -44,9 +44,10 @@ func WithLogger(logger Logger) Option {
 // A timeout of 0 means no timeout (wait indefinitely). Default is 30 seconds.
 //
 // Example:
-//   m := graceful.NewManager(
-//       graceful.WithShutdownTimeout(10 * time.Second),
-//   )
+//
+//	m := graceful.NewManager(
+//	    graceful.WithShutdownTimeout(10 * time.Second),
+//	)
 func WithShutdownTimeout(timeout time.Duration) Option {
 	return OptionFunc(func(o *Options) {
 		o.shutdownTimeout = timeout

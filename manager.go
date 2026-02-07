@@ -116,7 +116,10 @@ func (g *Manager) waitForJobsWithTimeout() {
 		g.logger.Infof("All jobs completed successfully")
 	case <-time.After(g.shutdownTimeout):
 		// Timeout reached
-		g.logger.Errorf("Shutdown timeout (%v) exceeded, some jobs may not have completed", g.shutdownTimeout)
+		g.logger.Errorf(
+			"Shutdown timeout (%v) exceeded, some jobs may not have completed",
+			g.shutdownTimeout,
+		)
 		msg := fmt.Errorf("shutdown timeout exceeded: %v", g.shutdownTimeout)
 		g.lock.Lock()
 		g.errors = append(g.errors, msg)
@@ -150,7 +153,11 @@ func (g *Manager) handleSignals(ctx context.Context) {
 				g.logger.Infof("PID %d. Received %v.", pid, sig)
 			}
 		case <-ctx.Done():
-			g.logger.Infof("PID: %d. Background context for manager closed - %v - Shutting down...", pid, ctx.Err())
+			g.logger.Infof(
+				"PID: %d. Background context for manager closed - %v - Shutting down...",
+				pid,
+				ctx.Err(),
+			)
 			g.doGracefulShutdown()
 			return
 		}
@@ -197,18 +204,19 @@ func (g *Manager) AddShutdownJob(f ShutdownJob) {
 //   - Clean up resources before returning
 //
 // Example:
-//   m.AddRunningJob(func(ctx context.Context) error {
-//       ticker := time.NewTicker(1 * time.Second)
-//       defer ticker.Stop()
-//       for {
-//           select {
-//           case <-ctx.Done():
-//               return nil  // Graceful exit
-//           case <-ticker.C:
-//               // Do work
-//           }
-//       }
-//   })
+//
+//	m.AddRunningJob(func(ctx context.Context) error {
+//	    ticker := time.NewTicker(1 * time.Second)
+//	    defer ticker.Stop()
+//	    for {
+//	        select {
+//	        case <-ctx.Done():
+//	            return nil  // Graceful exit
+//	        case <-ticker.C:
+//	            // Do work
+//	        }
+//	    }
+//	})
 //
 // Note: This method is thread-safe. Panics are recovered and converted to errors.
 func (g *Manager) AddRunningJob(f RunningJob) {
@@ -235,10 +243,10 @@ func (g *Manager) AddRunningJob(f RunningJob) {
 //
 // This should be used to block the main goroutine until graceful shutdown is complete:
 //
-//   m := graceful.NewManager()
-//   // ... add jobs ...
-//   <-m.Done()  // Block until shutdown completes
-//   errs := m.Errors()  // Check for errors
+//	m := graceful.NewManager()
+//	// ... add jobs ...
+//	<-m.Done()  // Block until shutdown completes
+//	errs := m.Errors()  // Check for errors
 //
 // Warning: If you don't wait for Done(), your program may exit before cleanup completes,
 // potentially causing goroutine leaks or incomplete shutdown.
@@ -252,9 +260,10 @@ func (g *Manager) Done() <-chan struct{} {
 // This is the same context passed to running jobs.
 //
 // Example:
-//   ctx := m.ShutdownContext()
-//   req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
-//   // Request will be cancelled when shutdown starts
+//
+//	ctx := m.ShutdownContext()
+//	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+//	// Request will be cancelled when shutdown starts
 func (g *Manager) ShutdownContext() context.Context {
 	return g.shutdownCtx
 }
@@ -270,13 +279,14 @@ func (g *Manager) ShutdownContext() context.Context {
 // The returned slice is a copy, so modifying it won't affect the internal state.
 //
 // Example:
-//   <-m.Done()
-//   if errs := m.Errors(); len(errs) > 0 {
-//       for _, err := range errs {
-//           log.Printf("Shutdown error: %v", err)
-//       }
-//       os.Exit(1)
-//   }
+//
+//	<-m.Done()
+//	if errs := m.Errors(); len(errs) > 0 {
+//	    for _, err := range errs {
+//	        log.Printf("Shutdown error: %v", err)
+//	    }
+//	    os.Exit(1)
+//	}
 func (g *Manager) Errors() []error {
 	g.lock.RLock()
 	defer g.lock.RUnlock()
@@ -314,10 +324,11 @@ func newManager(opts ...Option) *Manager {
 //   - WithShutdownTimeout(duration): Set maximum time to wait for shutdown (default: 30s).
 //
 // Example:
-//   m := graceful.NewManager(
-//       graceful.WithShutdownTimeout(10 * time.Second),
-//       graceful.WithLogger(customLogger),
-//   )
+//
+//	m := graceful.NewManager(
+//	    graceful.WithShutdownTimeout(10 * time.Second),
+//	    graceful.WithLogger(customLogger),
+//	)
 //
 // Important: Only one Manager can exist per process.
 func NewManager(opts ...Option) *Manager {
@@ -335,12 +346,13 @@ func NewManagerWithContext(ctx context.Context, opts ...Option) *Manager {
 // Use this in places where you need access to the manager but can't pass it directly.
 //
 // Example:
-//   // In main.go
-//   m := graceful.NewManager()
 //
-//   // In another package
-//   m := graceful.GetManager()
-//   m.AddShutdownJob(cleanup)
+//	// In main.go
+//	m := graceful.NewManager()
+//
+//	// In another package
+//	m := graceful.GetManager()
+//	m.AddShutdownJob(cleanup)
 func GetManager() *Manager {
 	if manager == nil {
 		panic("please use NewManager to initial the manager first")
